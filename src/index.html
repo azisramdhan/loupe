@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<link rel="stylesheet" href="styles.css"></head>
+<body>
+
+<header class="toolbar">
+  <div class="toolbar-group view-group">
+    <button type="button" id="toggleSidebar" class="tool" title="Hide or show the sidebar">
+      <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="2.4" y="3.2" width="11.2" height="9.6" rx="1.6"/><path d="M6.4 3.2v9.6"/></svg>
+      <span class="tool-label">Sidebar</span>
+    </button>
+  </div>
+  <div class="toolbar-divider" aria-hidden="true"></div>
+  <div class="toolbar-group">
+    <button type="button" id="listen" class="tool">
+      <svg class="icon icon-play" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 3.4 13 8l-7.5 4.6z" fill="currentColor" stroke="none"/></svg><svg class="icon icon-pause" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3.8v8.4M10 3.8v8.4" stroke-width="2"/></svg><span class="tool-label">Start Listening</span>
+    </button>
+    <button type="button" id="poll" class="tool" disabled>
+      <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M13.2 8a5.2 5.2 0 1 1-1.75-3.9"/><path d="M13.4 2.9v2.6h-2.6"/></svg><span class="tool-label">Check Now</span>
+    </button>
+  </div>
+  <div class="toolbar-spacer"></div>
+  <div class="toolbar-status">
+    <span class="dot" id="statusDot"></span><span id="status">Paused</span>
+    <span class="sep">·</span><span id="lastPoll">Not checked yet</span>
+  </div>
+</header>
+
+<div class="split">
+  <aside class="sidebar">
+    <div class="source-row selected" id="navRuns" role="button" tabindex="0">
+      <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h7M6 8h7M6 12h7"/><circle cx="3.2" cy="4" r=".9" fill="currentColor" stroke="none"/><circle cx="3.2" cy="8" r=".9" fill="currentColor" stroke="none"/><circle cx="3.2" cy="12" r=".9" fill="currentColor" stroke="none"/></svg><span>All Runs</span><span class="badge" id="count">0</span>
+    </div>
+
+    <div class="source-section">By Command</div>
+    <div id="screenExamples" class="source-list" aria-label="Filter runs by command"></div>
+
+
+  </aside>
+
+  <main>
+    <div id="message" role="status" hidden></div>
+
+    <section id="viewRuns" class="view">
+
+      <div class="table-wrap" id="tableWrap" tabindex="0" role="group" aria-label="Runs">
+        <table class="runs">
+          <thead>
+            <tr>
+              <th class="c-status">Status<span class="col-resize-handle"></span></th>
+              <th class="c-screen">Command<span class="col-resize-handle"></span></th>
+              <th class="c-device">Device<span class="col-resize-handle"></span></th>
+              <th class="c-pr">PR<span class="col-resize-handle"></span></th>
+              <th class="c-commit">Commit<span class="col-resize-handle"></span></th>
+              <th class="c-author">Author<span class="col-resize-handle"></span></th>
+              <th class="c-time">Received</th>
+            </tr>
+          </thead>
+          <tbody id="runs"></tbody>
+        </table>
+        <div id="empty">
+          <p class="empty-title">No Runs Yet</p>
+          <p class="footnote">Start listening, then post <code>/farm main</code> on an open pull request.</p>
+        </div>
+      </div>
+
+      <div id="detail" class="detail">
+        <p class="detail-empty">Select a run to see its details.</p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<dialog id="imageDialog">
+  <div class="sheet-head">
+    <span class="sheet-title">Screenshot</span>
+    <button type="button" id="closeImage" class="default">Done</button>
+  </div>
+  <div id="shots"></div>
+</dialog>
+<script src="renderer.js"></script></body></html>

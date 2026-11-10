@@ -1,0 +1,38 @@
+{
+  "name": "loupe",
+  "version": "0.1.0",
+  "private": true,
+  "description": "PR comment driven screenshot inspector for iOS and Android, running on one Mac",
+  "main": "src/main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test test/*.test.cjs",
+    "smoke": "electron scripts/smoke.cjs",
+    "pack": "electron-builder --mac dir",
+    "dist": "electron-builder --mac dmg",
+    "register-build": "node scripts/register-build.cjs",
+    "build-sha": "node scripts/build-sha.cjs"
+  },
+  "build": {
+    "appId": "id.alfagift.loupe",
+    "productName": "Loupe",
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "identity": null,
+      "category": "public.app-category.developer-tools",
+      "target": [
+        "dmg"
+      ]
+    }
+  },
+  "devDependencies": {
+    "electron": "^45.2.1",
+    "electron-builder": "^26.18.0"
+  },
+  "engines": {
+    "node": "^22.23.4 || ^24.22.1 || >=26.12.1"
+  }
+}

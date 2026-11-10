@@ -1,0 +1,467 @@
+<title>Alur Loupe</title>
+<style>
+  :root {
+    --paper: #F7F8FA;
+    --surface: #FFFFFF;
+    --surface-2: #EDF1F3;
+    --ink: #1B2530;
+    --muted: #6B7885;
+    --faint: #93A0AC;
+    --rule: #DCE3E8;
+    --accent: #1F6B52;
+    --accent-soft: #E3F0EA;
+    --clay: #A9542F;
+    --clay-soft: #F7E9E1;
+    --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #14181C;
+      --surface: #1B2126;
+      --surface-2: #232B31;
+      --ink: #E4EAEF;
+      --muted: #9DAAB6;
+      --faint: #76838F;
+      --rule: #2D363D;
+      --accent: #6FBB9C;
+      --accent-soft: #1D302A;
+      --clay: #E09A74;
+      --clay-soft: #33241D;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #14181C;
+    --surface: #1B2126;
+    --surface-2: #232B31;
+    --ink: #E4EAEF;
+    --muted: #9DAAB6;
+    --faint: #76838F;
+    --rule: #2D363D;
+    --accent: #6FBB9C;
+    --accent-soft: #1D302A;
+    --clay: #E09A74;
+    --clay-soft: #33241D;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 68rem;
+    margin: 0 auto;
+    padding: 4rem 1.75rem 6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 3.25rem;
+  }
+
+  .masthead { display: flex; flex-direction: column; gap: 1rem; }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+  h1 {
+    font-size: clamp(2rem, 4.5vw, 2.9rem);
+    line-height: 1.1;
+    letter-spacing: -0.028em;
+    font-weight: 680;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .lede {
+    font-size: 1.1rem;
+    color: var(--muted);
+    margin: 0;
+    max-width: 62ch;
+  }
+  .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.35rem; }
+  .chip {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    padding: 0.3em 0.7em;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    background: var(--surface);
+    color: var(--muted);
+  }
+  .chip.on { background: var(--accent-soft); border-color: transparent; color: var(--accent); }
+  .chip.gap { background: var(--clay-soft); border-color: transparent; color: var(--clay); }
+
+  section { display: flex; flex-direction: column; gap: 1.1rem; }
+  h2 {
+    font-size: 1.3rem;
+    letter-spacing: -0.015em;
+    font-weight: 660;
+    margin: 0;
+    padding-top: 1.75rem;
+    border-top: 1px solid var(--rule);
+  }
+  p { margin: 0; max-width: 68ch; }
+  .muted { color: var(--muted); }
+
+  figure { margin: 0; display: flex; flex-direction: column; gap: 0.85rem; }
+  .scroller {
+    overflow-x: auto;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 1.25rem;
+  }
+  .scroller svg { display: block; min-width: 44rem; max-width: 100%; height: auto; color: var(--ink); }
+  figcaption { font-size: 0.875rem; color: var(--muted); max-width: 68ch; }
+
+  /* SVG styling lives here: var() is unreliable inside SVG presentation attributes. */
+  .lane { fill: var(--surface-2); }
+  .box { fill: var(--surface); stroke: currentColor; stroke-width: 1.2; }
+  .box-accent { fill: var(--surface); stroke: var(--accent); stroke-width: 1.6; }
+  .box-accent-soft { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; }
+  .box-clay { fill: var(--surface); stroke: var(--clay); stroke-width: 1.4; }
+  .box-clay-soft { fill: var(--clay-soft); stroke: var(--clay); stroke-width: 1.4; stroke-dasharray: 4 3; }
+
+  .t { fill: currentColor; font-size: 13px; }
+  .t-sm { fill: var(--muted); font-size: 11px; }
+  .t-lbl { fill: var(--muted); font-size: 10.5px; }
+  .t-faint { fill: var(--faint); font-size: 11px; letter-spacing: 1.4px; font-family: var(--mono); }
+  .t-accent { fill: var(--accent); font-size: 12px; }
+  .t-clay { fill: var(--clay); font-size: 12.5px; }
+  .t-clay-sm { fill: var(--clay); font-size: 10.5px; }
+  .mono { font-family: var(--mono); }
+
+  .edge { fill: none; stroke: currentColor; stroke-width: 1.3; }
+  .edge-dash { fill: none; stroke: currentColor; stroke-width: 1.2; stroke-dasharray: 4 3; }
+  .edge-accent { fill: none; stroke: var(--accent); stroke-width: 1.6; }
+  .edge-clay { fill: none; stroke: var(--clay); stroke-width: 1.4; }
+  .divider { stroke: currentColor; stroke-width: 1; stroke-dasharray: 3 4; opacity: 0.3; }
+
+  .mk { fill: currentColor; }
+  .mk-clay { fill: var(--clay); }
+  .mk-accent { fill: var(--accent); }
+
+  table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+  .scroller.table-wrap { padding: 0; }
+  th, td { border: 1px solid var(--rule); padding: 0.6rem 0.8rem; text-align: left; vertical-align: top; }
+  th {
+    background: var(--surface-2);
+    font-weight: 620;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  td.num { font-variant-numeric: tabular-nums; font-family: var(--mono); white-space: nowrap; }
+  code {
+    font-family: var(--mono);
+    font-size: 0.86em;
+    background: var(--surface-2);
+    padding: 0.1em 0.35em;
+    border-radius: 2px;
+  }
+  td code, th code { background: none; padding: 0; }
+
+  ul { margin: 0; padding-left: 1.15rem; display: flex; flex-direction: column; gap: 0.4rem; max-width: 68ch; }
+  li::marker { color: var(--faint); }
+
+  .note {
+    border-left: 2px solid var(--clay);
+    background: var(--clay-soft);
+    padding: 0.9rem 1.1rem;
+    font-size: 0.92rem;
+    border-radius: 0 2px 2px 0;
+    max-width: 68ch;
+  }
+  .note strong { color: var(--clay); }
+
+  footer {
+    border-top: 1px solid var(--rule);
+    padding-top: 1.5rem;
+    font-size: 0.82rem;
+    color: var(--faint);
+    font-family: var(--mono);
+    line-height: 1.8;
+  }
+</style>
+
+<div class="page">
+
+  <header class="masthead">
+    <div class="eyebrow">azisramdhan/WebKitDemo &middot; PoC</div>
+    <h1>Dari komentar PR ke screenshot</h1>
+    <p class="lede">Loupe memantau komentar pull request. Satu komentar <code>/farm &lt;layar&gt;</code> menjalankan build dari head SHA PR di simulator iOS atau emulator Android lokal, lalu mengirim hasilnya kembali ke PR.</p>
+    <div class="chips">
+      <span class="chip on">terbukti end-to-end</span>
+      <span class="chip">Appium XCUITest</span>
+      <span class="chip">build otomatis per commit</span>
+      <span class="chip">98 test</span>
+    </div>
+  </header>
+
+  <section>
+    <h2>Alur lengkap</h2>
+    <p>Hanya dua hal yang menyeberangi batas mesin: komentar yang masuk, dan hasil yang keluar. Capture, device, dan artefak seluruhnya di satu Mac.</p>
+
+    <figure>
+      <div class="scroller">
+        <svg viewBox="0 0 1000 470" role="img" aria-label="Komentar /farm di GitHub di-poll oleh listener di Mac lokal, yang mengunci head SHA PR, memanggil Appium untuk mengarahkan simulator iOS, menyimpan PNG, lalu mengunggahnya ke branch artifacts dan mengedit satu komentar galeri di PR. Manifest build yang belum ada dibangun sendiri oleh farm sebelum Appium dipanggil.">
+          <defs>
+            <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path class="mk" d="M 0 1 L 9 5 L 0 9 z"></path>
+            </marker>
+            <marker id="a1c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path class="mk-clay" d="M 0 1 L 9 5 L 0 9 z"></path>
+            </marker>
+            <marker id="a1a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path class="mk-accent" d="M 0 1 L 9 5 L 0 9 z"></path>
+            </marker>
+          </defs>
+
+          <rect class="lane" x="0" y="16" width="1000" height="150" rx="3"></rect>
+          <rect class="lane" x="0" y="196" width="1000" height="258" rx="3"></rect>
+          <text class="t-faint" x="16" y="38">GITHUB</text>
+          <text class="t-faint" x="16" y="218">MAC INI &mdash; SEMUA LOKAL</text>
+
+          <rect class="box" x="36" y="74" width="190" height="62" rx="3"></rect>
+          <text class="t" x="131" y="99" text-anchor="middle">Komentar PR</text>
+          <text class="t-sm mono" x="131" y="118" text-anchor="middle">/farm web</text>
+
+          <rect class="box" x="520" y="74" width="190" height="62" rx="3"></rect>
+          <text class="t" x="615" y="99" text-anchor="middle">Branch artifacts</text>
+          <text class="t-sm mono" x="615" y="118" text-anchor="middle">&lt;sha&gt;/&lt;device&gt;/web.png</text>
+
+          <rect class="box-accent" x="760" y="74" width="200" height="62" rx="3"></rect>
+          <text class="t" x="860" y="99" text-anchor="middle">Komentar galeri</text>
+          <text class="t-sm" x="860" y="118" text-anchor="middle">satu per commit</text>
+
+          <rect class="box" x="36" y="250" width="170" height="62" rx="3"></rect>
+          <text class="t" x="121" y="275" text-anchor="middle">Listener</text>
+          <text class="t-sm" x="121" y="294" text-anchor="middle">kursor komentar</text>
+
+          <rect class="box" x="246" y="250" width="190" height="62" rx="3"></rect>
+          <text class="t" x="341" y="275" text-anchor="middle">Run antre</text>
+          <text class="t-sm" x="341" y="294" text-anchor="middle">SHA dikunci · --all menyebar</text>
+
+          <rect class="box" x="476" y="250" width="210" height="62" rx="3"></rect>
+          <text class="t" x="581" y="275" text-anchor="middle">Appium → perangkat</text>
+          <text class="t-sm" x="581" y="294" text-anchor="middle">iOS / Android · paralel</text>
+
+          <rect class="box" x="726" y="250" width="170" height="62" rx="3"></rect>
+          <text class="t" x="811" y="275" text-anchor="middle">PNG lokal</text>
+          <text class="t-sm" x="811" y="294" text-anchor="middle">hingga 4 bagian*</text>
+
+          <rect class="box" x="476" y="362" width="210" height="58" rx="3"></rect>
+          <text class="t" x="581" y="386" text-anchor="middle">Manifest build</text>
+          <text class="t-sm mono" x="581" y="404" text-anchor="middle">&lt;sha&gt;.json</text>
+
+          <rect class="box-clay" x="726" y="362" width="236" height="58" rx="3"></rect>
+          <text class="t-clay" x="844" y="383" text-anchor="middle">Build otomatis</text>
+          <text class="t-clay-sm mono" x="844" y="400" text-anchor="middle">Xcode / Gradle → snapshot SHA</text>
+          <text class="t-clay-sm" x="844" y="414" text-anchor="middle">hanya commit baru</text>
+
+          <path class="edge" d="M 131 136 L 131 210 L 121 210 L 121 246" marker-end="url(#a1)"></path>
+          <text class="t-lbl" x="142" y="190">poll 60 dtk</text>
+
+          <path class="edge" d="M 206 281 L 242 281" marker-end="url(#a1)"></path>
+          <text class="t-lbl" x="224" y="267" text-anchor="middle">otorisasi</text>
+
+          <path class="edge" d="M 436 281 L 472 281" marker-end="url(#a1)"></path>
+          <text class="t-lbl" x="454" y="267" text-anchor="middle">pasang</text>
+
+          <path class="edge" d="M 686 281 L 722 281" marker-end="url(#a1)"></path>
+          <text class="t-lbl" x="704" y="267" text-anchor="middle">simpan</text>
+
+          <path class="edge" d="M 581 358 L 581 316" marker-end="url(#a1)"></path>
+          <text class="t-lbl" x="594" y="340">dipakai</text>
+
+          <path class="edge-clay" d="M 722 391 L 690 391" marker-end="url(#a1c)"></path>
+          <text class="t-clay-sm" x="706" y="378" text-anchor="middle">kalau belum ada</text>
+
+          <path class="edge" d="M 770 250 L 770 180 L 669 180 L 669 140" marker-end="url(#a1)"></path>
+          <text class="t-lbl" x="702" y="172" text-anchor="middle">unggah</text>
+
+          <path class="edge-accent" d="M 862 250 L 862 140" marker-end="url(#a1a)"></path>
+          <text class="t-accent" x="874" y="200">edit komentar</text>
+
+          <path class="edge-dash" d="M 714 105 L 752 105" marker-end="url(#a1)"></path>
+          <text class="t-lbl" x="733" y="92" text-anchor="middle">raw URL</text>
+        </svg>
+      </div>
+      <figcaption>Jalur hijau adalah hasil yang kembali ke PR. Blok clay adalah satu-satunya langkah yang memakan menit, dan hanya terjadi pada <code>/farm</code> pertama di sebuah commit.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2>Antrean dan beberapa perangkat</h2>
+    <p><code>/farm login --all</code> membuat satu job untuk setiap perangkat terdaftar yang sesuai platform PR. WebKitDemo memilih simulator iOS yang tersedia, termasuk yang belum boot; WebViewDemo memilih emulator Android online. Tanpa <code>--all</code>, satu job dijalankan oleh satu perangkat.</p>
+    <p>Satu perangkat menangani satu job, maksimal delapan perangkat terdaftar. Perangkat sibuk menyelesaikan antreannya. Kedua platform bisa bekerja bersamaan dari PR masing-masing. Build SHA sama dibagikan; build berbeda pada checkout yang sama diproses bergantian. Artefak disimpan terpisah per SHA.</p>
+    <h2>Unggah dan pemulihan koneksi</h2>
+    <p>Publikasi diserialkan per repository. Setiap percobaan memeriksa ulang branch, SHA file, dan marker komentar. Gangguan koneksi, timeout, atau HTTP 500/502/503/504 dicoba ulang maksimal dua kali, setelah 1 dan 2 detik. Error izin token tidak diulang otomatis.</p>
+    <p>Satu komentar hasil per PR dan commit, dengan entri per layar dan perangkat. Identitas perangkat lama dimigrasikan agar tidak menjadi entri tambahan. Jika retry tetap gagal, hasil lokal dipertahankan beserta pesan error.</p>
+  </section>
+  <section>
+    <h2>Build dikunci ke commit</h2>
+    <p>Farm mengunci head SHA PR saat komentar terdeteksi, lalu mencari manifest untuk SHA itu. Tidak ketemu berarti farm membangunnya sendiri: clone, checkout commit itu, build melalui Xcode (iOS) atau Gradle (Android), salin artefak ke folder per SHA, daftarkan manifest &mdash; baru menyentuh device.</p>
+    <p>Penguncian ke SHA disengaja: screenshot harus membuktikan kode PR, bukan kode apa pun yang kebetulan ada di disk. Commit yang sudah pernah dibangun dipakai ulang, jadi hanya <code>/farm</code> pertama di sebuah commit yang membayar beberapa menit; sisanya hitungan detik.</p>
+    <div class="note"><strong>Kegagalan compile tidak pernah membuka sesi device.</strong> Run gagal dengan output alat build yang asli. Manifest yang artefak <code>.app</code> atau <code>.apk</code>-nya sudah terhapus dibangun ulang, bukan gagal di device.</div>
+
+    <h2>Layar yang tidak muat satu layar</h2><p>*Batas default 4 bagian, maksimum konfigurasi 6. Halaman yang lebih panjang dari batas ini dapat terpotong; potongan tidak dijahit menjadi satu gambar.</p>
+    <p>Screenshot Appium adalah layar device, jadi konten di bawah lipatan tidak ikut. Farm memotret, melakukan flick cepat di tepi kanan, memotret lagi, dan berhenti saat frame tidak berubah lagi &mdash; layar yang muat menghasilkan tepat satu bagian.</p>
+    <p>Perbandingan frame memakai ambang 0,2%, bukan kesamaan byte. Antialiasing dan indikator yang berkedip menggeser 0,008% byte, sementara scroll sungguhan menggeser setiap baris &mdash; jarak 25&times; antara noise dan sinyal. Bagian-bagiannya berbagi satu entri galeri, dan run yang menghasilkan lebih sedikit bagian menghapus bagian lama di branch, jadi tidak ada file yatim yang menyesatkan.</p>
+    <div class="note"><strong>Ambang itu ditemukan lewat kegagalan, bukan dirancang.</strong> Versi pertama memakai kesamaan byte persis dan menghasilkan dua bagian untuk halaman yang jelas-jelas muat. Baru setelah selisihnya diukur &mdash; 737 byte dari 9.043.128 &mdash; terlihat bahwa yang dibandingkan adalah derau, bukan konten.</div>
+  </section>
+
+  <section>
+    <h2>Jaminan tanpa duplikasi</h2>
+    <p>Komentar hasil dan file gambar sama-sama idempoten per commit SHA. Marker tersembunyi di badan komentar yang menentukan POST atau PATCH; blob sha yang menentukan buat-baru atau timpa.</p>
+
+    <figure>
+      <div class="scroller">
+        <svg viewBox="0 0 1000 330" role="img" aria-label="Dua mekanisme idempoten berdampingan. Kiri: setelah capture selesai, farm mencari komentar bermarker loupe untuk SHA ini; tidak ada berarti POST komentar baru, ada berarti PATCH komentar itu, menghasilkan tepat satu komentar per commit. Kanan: saat mengunggah PNG, path yang sudah ada disertai blob sha sehingga file ditimpa, menghasilkan satu file per layar, perangkat, dan commit.">
+          <defs>
+            <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path class="mk" d="M 0 1 L 9 5 L 0 9 z"></path>
+            </marker>
+          </defs>
+
+          <text class="t-faint" x="20" y="26">KOMENTAR</text>
+          <text class="t-faint" x="560" y="26">FILE GAMBAR</text>
+          <line class="divider" x1="528" y1="14" x2="528" y2="316"></line>
+
+          <rect class="box" x="150" y="44" width="220" height="48" rx="3"></rect>
+          <text class="t" x="260" y="73" text-anchor="middle">Capture selesai</text>
+
+          <rect class="box" x="120" y="128" width="280" height="54" rx="3"></rect>
+          <text class="t" x="260" y="150" text-anchor="middle" font-size="12.5">Ada komentar dengan marker</text>
+          <text class="t-sm mono" x="260" y="169" text-anchor="middle">device-farm:&lt;sha&gt;</text>
+
+          <rect class="box" x="20" y="218" width="220" height="50" rx="3"></rect>
+          <text class="t" x="130" y="240" text-anchor="middle" font-size="12.5">POST</text>
+          <text class="t-sm" x="130" y="258" text-anchor="middle">komentar baru</text>
+
+          <rect class="box-accent-soft" x="280" y="218" width="220" height="50" rx="3"></rect>
+          <text class="t-accent" x="390" y="240" text-anchor="middle" font-size="12.5">PATCH</text>
+          <text class="t-accent" x="390" y="258" text-anchor="middle" font-size="11">edit di tempat</text>
+
+          <path class="edge" d="M 260 92 L 260 124" marker-end="url(#a2)"></path>
+          <path class="edge" d="M 200 182 L 130 202 L 130 214" marker-end="url(#a2)"></path>
+          <text class="t-lbl" x="144" y="200">tidak</text>
+          <path class="edge" d="M 320 182 L 390 202 L 390 214" marker-end="url(#a2)"></path>
+          <text class="t-lbl" x="358" y="200">ya</text>
+
+          <text class="t-accent" x="260" y="300" text-anchor="middle">tepat 1 komentar per commit SHA</text>
+
+          <rect class="box" x="650" y="44" width="260" height="48" rx="3"></rect>
+          <text class="t" x="780" y="66" text-anchor="middle" font-size="12.5">Unggah PNG</text>
+          <text class="t-sm mono" x="780" y="83" text-anchor="middle">&lt;sha&gt;/&lt;layar&gt;.png</text>
+
+          <rect class="box" x="660" y="128" width="240" height="54" rx="3"></rect>
+          <text class="t" x="780" y="160" text-anchor="middle" font-size="12.5">Path itu sudah ada?</text>
+
+          <rect class="box" x="548" y="218" width="200" height="50" rx="3"></rect>
+          <text class="t" x="648" y="240" text-anchor="middle" font-size="12.5">Blob baru</text>
+          <text class="t-sm" x="648" y="258" text-anchor="middle">file ditambahkan</text>
+
+          <rect class="box-accent-soft" x="780" y="218" width="200" height="50" rx="3"></rect>
+          <text class="t-accent" x="880" y="240" text-anchor="middle" font-size="12.5">Sertakan blob sha</text>
+          <text class="t-accent" x="880" y="258" text-anchor="middle" font-size="11">file ditimpa</text>
+
+          <path class="edge" d="M 780 92 L 780 124" marker-end="url(#a2)"></path>
+          <path class="edge" d="M 720 182 L 648 202 L 648 214" marker-end="url(#a2)"></path>
+          <text class="t-lbl" x="662" y="200">tidak</text>
+          <path class="edge" d="M 840 182 L 880 202 L 880 214" marker-end="url(#a2)"></path>
+          <text class="t-lbl" x="854" y="200">ya</text>
+
+          <text class="t-accent" x="780" y="300" text-anchor="middle">1 file per layar per commit SHA</text>
+        </svg>
+      </div>
+      <figcaption>Dua jalur idempoten yang berjalan berurutan setelah setiap capture berhasil. Komentar manusia tidak pernah cocok dengan marker, jadi tidak pernah tersentuh.</figcaption>
+    </figure>
+
+    <p class="muted">Hitungan nyata di PR&nbsp;#1, diverifikasi lewat API GitHub setelah tiap perintah. PR dan branch artifact-nya sudah dibersihkan setelah PoC selesai, jadi angka di bawah adalah catatan pengukuran, bukan sesuatu yang masih bisa dibuka:</p>
+    <div class="scroller table-wrap">
+      <table>
+        <thead>
+          <tr><th>Perintah</th><th>Komentar hasil</th><th>File di branch</th><th>Entri di galeri</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>/farm local-demo</code></td><td>1 &mdash; dibuat</td><td class="num">1</td><td class="num">1</td></tr>
+          <tr><td><code>/farm legacy</code></td><td>1 &mdash; di-edit</td><td class="num">2</td><td class="num">2</td></tr>
+          <tr><td><code>/farm local-demo</code> lagi</td><td>1 &mdash; di-edit</td><td class="num">2</td><td class="num">2</td></tr>
+          <tr><td><code>/farm web</code></td><td>1 &mdash; di-edit</td><td class="num">3</td><td class="num">3</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note"><strong>Baris ketiga pernah salah.</strong> Pengulangan menghasilkan 3 entri karena dedup memakai run id, padahal komentar baru selalu membawa id baru. Unit test luput karena memberi retry id yang sama &mdash; bentuk yang tidak pernah terjadi di dunia nyata. Sekarang dedup per layar, dan test-nya sudah dipastikan gagal terhadap kode lama.</div>
+  </section>
+
+  <section>
+    <h2>Empat target layar</h2>
+    <p>Nama layar sama pada WebKitDemo (iOS) dan WebViewDemo (Android). Tabel berikut menunjukkan navigasi iOS; Android memakai Activity dan locator UiAutomator2 yang setara.</p>
+    <div class="scroller table-wrap">
+      <table>
+        <thead>
+          <tr><th>Perintah</th><th>Layar</th><th>Navigasi dari layar awal</th><th>Penanda siap</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>main</code> / <code>login</code></td>
+            <td>LoginViewController</td>
+            <td class="muted">&mdash; langsung</td>
+            <td>tombol <code>Log In</code></td>
+          </tr>
+          <tr>
+            <td><code>web</code></td>
+            <td>WebViewController &rarr; example.com</td>
+            <td>ketik admin/password, tutup keyboard, tap Log In</td>
+            <td>WKWebView muncul</td>
+          </tr>
+          <tr>
+            <td><code>local-demo</code></td>
+            <td>demo HTML bawaan</td>
+            <td>tap Skip to Local HTML Demo</td>
+            <td>heading <code>WebKit Bridge Demo</code> ter-render</td>
+          </tr>
+          <tr>
+            <td><code>legacy</code></td>
+            <td>LegacyWebViewController</td>
+            <td>tap demo lokal, lalu tap Legacy</td>
+            <td>nav bar <code>Legacy UIWebView Info</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="muted"><code>/farm</code> tanpa parameter ditolak dan tercatat sebagai kartu <code>rejected</code>. Nama yang tidak dikenal ditolak sebelum menyentuh device. Komentar di dalam code block atau quote diabaikan total, supaya diskusi tentang perintahnya sendiri tidak memicu run.</p>
+  </section>
+
+  <section>
+    <h2>Yang sudah terbukti</h2>
+    <ul>
+      <li>Rantai penuh dijalankan dengan token asli di PR sungguhan &mdash; bukan mock, bukan payload buatan.</li>
+      <li>Capture iOS dan Android, scroll local-demo, serta publikasi di PR kedua demo telah diverifikasi. Dua simulator dan satu emulator berjalan paralel.</li>
+      <li>Commit yang belum punya build dibangun sendiri oleh farm, lalu dipakai ulang pada run berikutnya.</li>
+      <li>Gambar di branch artifacts terjangkau publik: <code>HTTP 200</code>, <code>image/png</code>, ukuran identik dengan file lokal.</li>
+      <li>Run yang menghasilkan lebih sedikit bagian menyapu sisa bagian lama di branch, terbukti lewat commit penghapusan yang asli.</li>
+      <li>Run membaca <code>publishing</code> selama posting berlangsung dan <code>completed</code> setelah capture selesai. Jika unggah tetap gagal setelah retry, PNG lokal tetap tersedia dan detail Publishing menampilkan error.</li>
+      <li>Setelan baru sampai ke instalasi yang confignya sudah ada, tanpa menimpa pilihan pengguna.</li>
+      <li>98 test &mdash; GitHub, Appium, dan tiap alat build dimock &mdash; plus smoke test yang menjalankan UI Electron sungguhan.</li>
+      <li><code>/farm web</code> menangkap cacat asli WebKitDemo: alert app-bound domain, karena <code>WKAppBoundDomains</code> dideklarasikan tanpa <code>limitsNavigationsToAppBoundDomains</code>. Perbaikannya ada di sisi app, bukan Loupe.</li>
+    </ul>
+  </section>
+
+  <footer>
+    Sengaja di luar lingkup: satu layar per komentar &middot; tanpa commit status atau check run &middot; tanpa device fisik, video, baseline diffing, retensi &middot; tanpa menjahit potongan jadi satu gambar panjang
+  </footer>
+
+</div>
