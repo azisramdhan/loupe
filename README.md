@@ -2,6 +2,8 @@
 
 > Post `/farm <screen>` on a pull request → Loupe builds the commit, drives a simulator or emulator with Appium, and delivers a lossless PNG — all on your Mac, automatically.
 
+![Loupe demo](docs/demo.gif)
+
 One comment, one screen. Multiple screenshots when scrolling is needed. Results appear in the desktop app and can optionally be posted back to the PR.
 
 Two projects are wired up, and a command means the same thing on either:
